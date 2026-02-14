@@ -2,15 +2,42 @@
 
 import { useState, type FormEvent } from "react"
 import { Mail, Phone, Send, ArrowUpRight } from "lucide-react"
+import { supabase } from "@/lib/supabaseClient"
 
 export function ContactSection() {
-  const [formState, setFormState] = useState({ name: "", email: "", message: "" })
+  const [formState, setFormState] = useState({
+    name: "",
+    email: "",
+    message: "",
+    rating: 5,
+  })
   const [submitted, setSubmitted] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    setErrorMsg(null)
+    setLoading(true)
+
+    const { error } = await supabase.from("feedback").insert([
+      {
+        name: formState.name.trim(),
+        message: formState.message.trim(),
+        rating: Number(formState.rating),
+      },
+    ])
+
+    setLoading(false)
+
+    if (error) {
+      console.log("Supabase insert error:", error)
+      setErrorMsg(error.message)
+      return
+    }
+
     setSubmitted(true)
-    setFormState({ name: "", email: "", message: "" })
+    setFormState({ name: "", email: "", message: "", rating: 5 })
     setTimeout(() => setSubmitted(false), 3000)
   }
 
@@ -21,27 +48,27 @@ export function ContactSection() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <span className="font-mono text-sm text-accent">{"04."}</span>
-            <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
-              Feedback
-            </h2>
+            <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">Feedback</h2>
           </div>
           <div className="hidden h-px flex-1 bg-border sm:block" />
         </div>
 
         <div className="mt-12 grid gap-10 md:grid-cols-2">
-          {/* Contact Form */}
+          {/* Feedback Form */}
           <div className="overflow-hidden rounded-xl border border-border bg-card">
             <div className="flex items-center gap-2 border-b border-border bg-secondary/30 px-5 py-3">
               <span className="h-3 w-3 rounded-full bg-chart-3/60" />
               <span className="h-3 w-3 rounded-full bg-chart-4/60" />
               <span className="h-3 w-3 rounded-full bg-accent/60" />
-              <span className="ml-2 font-mono text-xs text-muted-foreground">
-                send_message.tsx
-              </span>
+              <span className="ml-2 font-mono text-xs text-muted-foreground">send_message.tsx</span>
             </div>
+
             <form onSubmit={handleSubmit} className="space-y-4 p-5">
               <div>
-                <label htmlFor="name" className="mb-1.5 block font-mono text-xs font-medium text-muted-foreground">
+                <label
+                  htmlFor="name"
+                  className="mb-1.5 block font-mono text-xs font-medium text-muted-foreground"
+                >
                   {"// name"}
                 </label>
                 <input
@@ -54,22 +81,50 @@ export function ContactSection() {
                   placeholder="Your name"
                 />
               </div>
+
               <div>
-                <label htmlFor="email" className="mb-1.5 block font-mono text-xs font-medium text-muted-foreground">
-                  {"// email"}
+                <label
+                  htmlFor="email"
+                  className="mb-1.5 block font-mono text-xs font-medium text-muted-foreground"
+                >
+                  {"// email (optional)"}
                 </label>
                 <input
                   id="email"
                   type="email"
-                  required
                   value={formState.email}
                   onChange={(e) => setFormState((prev) => ({ ...prev, email: e.target.value }))}
                   className="w-full rounded-lg border border-border bg-secondary/40 px-4 py-3 text-sm text-foreground transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   placeholder="your.email@example.com"
                 />
               </div>
+
               <div>
-                <label htmlFor="message" className="mb-1.5 block font-mono text-xs font-medium text-muted-foreground">
+                <label
+                  htmlFor="rating"
+                  className="mb-1.5 block font-mono text-xs font-medium text-muted-foreground"
+                >
+                  {"// rating (1-5)"}
+                </label>
+                <input
+                  id="rating"
+                  type="number"
+                  min={1}
+                  max={5}
+                  required
+                  value={formState.rating}
+                  onChange={(e) =>
+                    setFormState((prev) => ({ ...prev, rating: Number(e.target.value) }))
+                  }
+                  className="w-full rounded-lg border border-border bg-secondary/40 px-4 py-3 text-sm text-foreground transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="message"
+                  className="mb-1.5 block font-mono text-xs font-medium text-muted-foreground"
+                >
                   {"// message"}
                 </label>
                 <textarea
@@ -79,15 +134,19 @@ export function ContactSection() {
                   value={formState.message}
                   onChange={(e) => setFormState((prev) => ({ ...prev, message: e.target.value }))}
                   className="w-full resize-none rounded-lg border border-border bg-secondary/40 px-4 py-3 text-sm text-foreground transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  placeholder="Your message..."
+                  placeholder="Your feedback..."
                 />
               </div>
+
+              {errorMsg && <p className="text-sm text-red-500">Failed to submit: {errorMsg}</p>}
+
               <button
                 type="submit"
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/25"
+                disabled={loading}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/25 disabled:opacity-60"
               >
                 <Send className="h-4 w-4" />
-                {submitted ? "Message Sent!" : "Send Message"}
+                {loading ? "Sending..." : submitted ? "Message Sent!" : "Send Message"}
               </button>
             </form>
           </div>
@@ -156,3 +215,4 @@ export function ContactSection() {
     </section>
   )
 }
+
