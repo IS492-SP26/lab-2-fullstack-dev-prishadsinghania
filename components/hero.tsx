@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useEffect, useState } from "react"
 
 export function Hero() {
@@ -75,14 +76,17 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Profile Photo */}
+          {/* Profile Photo - public/images/prisha.jpg inside circle */}
           <div className="relative shrink-0">
             <div className="absolute -inset-2 rounded-full bg-gradient-to-br from-primary/40 to-accent/40 blur-xl opacity-60" />
             <div className="relative h-56 w-56 overflow-hidden rounded-full border-2 border-primary/30 shadow-[0_0_40px_rgba(0,212,255,0.15)] md:h-72 md:w-72 lg:h-80 lg:w-80">
-              <img
-                src="/public/images/Prisha.jpg"
+              <Image
+                src="/images/prisha.jpg"
                 alt="Prisha Singhania"
+                width={320}
+                height={320}
                 className="h-full w-full object-cover object-top"
+                priority
               />
             </div>
           </div>
