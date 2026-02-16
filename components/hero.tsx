@@ -80,7 +80,7 @@ export function Hero() {
             <div className="absolute -inset-2 rounded-full bg-gradient-to-br from-primary/40 to-accent/40 blur-xl opacity-60" />
             <div className="relative h-56 w-56 overflow-hidden rounded-full border-2 border-primary/30 shadow-[0_0_40px_rgba(0,212,255,0.15)] md:h-72 md:w-72 lg:h-80 lg:w-80">
               <img
-                src="/images/prisha.jpg"
+                src="/public/images/prisha.jpg"
                 alt="Prisha Singhania"
                 className="h-full w-full object-cover object-top"
               />
